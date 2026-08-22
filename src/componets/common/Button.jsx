@@ -27,3 +27,26 @@ export default function Button({
     <button
       type={type}
       disabled={disabled}
+      className={clsx(
+        'btn',
+        `btn-${variant}`,
+        block && 'btn-block',
+        !block && 'btn-inline',
+        size === 'sm' && 'btn-sm',
+        disabled && 'btn-disabled',
+        className
+      )}
+      style={{
+        display: Icon ? 'inline-flex' : undefined,
+        alignItems: Icon ? 'center' : undefined,
+        justifyContent: Icon ? 'center' : undefined,
+        gap: Icon ? 8 : undefined,
+        flexDirection: Icon && iconPosition === 'right' ? 'row-reverse' : 'row',
+      }}
+      {...rest}
+    >
+      {Icon && <Icon size={size === 'sm' ? 14 : 16} />}
+      {children}
+    </button>
+  )
+}
