@@ -38,3 +38,18 @@ export default function ContentCard({ content }) {
           >
             {content.readTime}
           </span>
+          )}
+      </div>
+      <div className="card-body">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <span className="tag tag-lime">{content.category}</span>
+          <span className="muted mono" style={{ fontSize: 11 }}>{content.date}</span>
+        </div>
+        <h3 style={{ fontSize: 'clamp(14px, 2.2vw, 16px)', marginBottom: 6, lineHeight: 1.3 }}>{content.title}</h3>
+        <p className="muted" style={{ fontSize: 13, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {content.description}
+        </p>
+      </div>
+    </div>
+  )
+}
