@@ -1,175 +1,72 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Bookmark, Heart, ExternalLink, Share2, MessageSquare, Send } from 'lucide-react';
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Heart, ThumbsDown, MessageCircle, Share2, Bookmark } from 'lucide-react'
+import clsx from 'clsx'
+import MediaViewer from '../../components/content/MediaViewer.jsx'
+import CommentThread from '../../components/content/CommentThread.jsx'
+import { MOCK_CONTENT } from '../../data/mockContent.js'
 
-export default function ContentDetail({ onNavigate, contentId }) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [likesCount, setLikesCount] = useState(312);
-  const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState([
-    { id: '1', author: 'dev_alex', text: 'Great breakdown of state synchronization across client and server boundaries!', time: '2h ago' },
-    { id: '2', author: 'code_craft', text: 'Would love to see a follow-up post on streaming Suspense boundaries.', time: '4h ago' }
-  ]);
-
-  const article = {
-    title: 'React Server Components Are Changing How We Think About State',
-    author: 'Sarah Chen',
-    authorRole: 'Senior Frontend Architect',
-    date: 'Aug 18, 2026',
-    readTime: '9 min read',
-    category: 'Frontend',
-    type: 'ARTICLE',
-    url: 'https://dev.to',
-    content: `React Server Components (RSC) represent a fundamental shift in how we architect web applications. By allowing components to execute exclusively on the server, we eliminate client bundle overhead while retaining component-driven UI paradigms.
-
-Key concepts covered in this architecture shift:
-• Zero-bundle-size server components that render directly to HTML streams.
-• Direct backend access without public API layer boilerplates.
-• Seamless composition between server component trees and client-side interactivity.`
-  };
-
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
-  };
-
-  const handleAddComment = (e) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    setComments([
-      ...comments,
-      { id: String(Date.now()), author: 'you', text: commentText.trim(), time: 'Just now' }
-    ]);
-    setCommentText('');
-  };
+export default function ContentDetail() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const content = MOCK_CONTENT.find((c) => String(c.id) === id) || MOCK_CONTENT[0]
+  const [saved, setSaved] = useState(false)
+  const [reaction, setReaction] = useState(null) // 'like' | 'dislike' | null
+  const [showShare, setShowShare] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-4 sm:p-6 md:p-8 max-w-4xl mx-auto pb-24">
-      {/* Navigation Top Bar */}
-      <button
-        onClick={() => onNavigate?.('home')}
-        className="flex items-center gap-2 text-xs font-['JetBrains_Mono'] text-zinc-400 hover:text-white mb-6 p-2 border border-zinc-800 bg-zinc-950/60 w-fit transition-colors"
-      >
-        <ArrowLeft size={16} />
-        <span>BACK TO FEED</span>
+    <div className="screen">
+      <button className="btn-icon btn-secondary" onClick={() => navigate(-1)} style={{ marginBottom: 16 }}>
+        <ArrowLeft size={18} />
       </button>
 
-      {/* Main Header */}
-      <header className="border-b border-zinc-800 pb-6 mb-8 space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-['JetBrains_Mono'] uppercase font-bold px-2 py-0.5 bg-[#7c3aed]/20 text-[#84cc16] border border-[#7c3aed]/40">
-            {article.category}
-          </span>
-          <span className="text-[10px] font-['JetBrains_Mono'] uppercase font-bold px-2 py-0.5 bg-zinc-900 text-zinc-400 border border-zinc-800">
-            {article.type}
-          </span>
-          <span className="text-xs font-['JetBrains_Mono'] text-zinc-500 ml-auto">
-            {article.readTime}
-          </span>
+      <MediaViewer content={content} />
+
+      <span className={clsx('tag', 'tag-violet')} style={{ marginTop: 16, display: 'inline-block' }}>{content.category}</span>
+      <h1 style={{ fontSize: 24, margin: '10px 0' }}>{content.title}</h1>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--surface-2)' }} />
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{content.author}</div>
+          <div className="muted mono" style={{ fontSize: 11 }}>{content.date} · {content.readTime}</div>
         </div>
+      </div>
 
-        <h1 className="font-['Outfit'] text-2xl sm:text-4xl font-extrabold text-zinc-100 leading-tight">
-          {article.title}
-        </h1>
+      <p className="muted" style={{ lineHeight: 1.6, marginBottom: 24, maxWidth: '65ch' }}>{content.description}</p>
 
-        {/* Author Metadata & Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          <div>
-            <div className="text-sm font-bold text-zinc-200">{article.author}</div>
-            <div className="text-xs font-['JetBrains_Mono'] text-zinc-500">
-              {article.authorRole} • {article.date}
+      <div className="action-row" style={{ marginBottom: 28, borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '14px 0' }}>
+        <button className="btn-icon btn-secondary" onClick={() => setReaction(reaction === 'like' ? null : 'like')} style={{ color: reaction === 'like' ? 'var(--lime)' : 'var(--text)' }}>
+          <Heart size={18} fill={reaction === 'like' ? 'var(--lime)' : 'none'} />
+        </button>
+        <button className="btn-icon btn-secondary" onClick={() => setReaction(reaction === 'dislike' ? null : 'dislike')} style={{ color: reaction === 'dislike' ? 'var(--danger)' : 'var(--text)' }}>
+          <ThumbsDown size={18} />
+        </button>
+        <button className="btn-icon btn-secondary">
+          <MessageCircle size={18} />
+        </button>
+        <button className="btn-icon btn-secondary" onClick={() => setSaved(!saved)} style={{ color: saved ? 'var(--violet)' : 'var(--text)' }}>
+          <Bookmark size={18} fill={saved ? 'var(--violet)' : 'none'} />
+        </button>
+        <button className="btn-icon btn-secondary" onClick={() => setShowShare(true)} style={{ marginLeft: 'auto' }}>
+          <Share2 size={18} />
+        </button>
+      </div>
+
+      <CommentThread contentId={content.id} />
+
+      {showShare && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowShare(false)}>
+          <div className="card" style={{ width: '100%', maxWidth: 480, margin: '0 auto', borderRadius: '16px 16px 0 0' }} onClick={(e) => e.stopPropagation()}>
+            <div className="card-body">
+              <h3 style={{ marginBottom: 16 }}>Share</h3>
+              <button className="btn btn-secondary" style={{ marginBottom: 8 }}>Copy link</button>
+              <button className="btn btn-secondary" style={{ marginBottom: 8 }}>Share to socials</button>
+              <button className="btn btn-secondary">Recommend to a followed user</button>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleLike}
-              className={`p-2.5 border text-xs font-['JetBrains_Mono'] flex items-center gap-1.5 transition-colors ${
-                liked
-                  ? 'bg-red-500/10 border-red-500/40 text-red-400'
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Heart size={16} className={liked ? 'fill-current' : ''} />
-              <span>{likesCount}</span>
-            </button>
-
-            <button
-              onClick={() => setSaved(!saved)}
-              className={`p-2.5 border text-xs font-['JetBrains_Mono'] transition-colors ${
-                saved
-                  ? 'bg-[#84cc16]/10 border-[#84cc16]/40 text-[#84cc16]'
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white'
-              }`}
-              title="Save to Wishlist"
-            >
-              <Bookmark size={16} className={saved ? 'fill-current' : ''} />
-            </button>
-
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noreferrer"
-              className="p-2.5 bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
-              title="Open Original Source"
-            >
-              <ExternalLink size={16} />
-            </a>
-          </div>
         </div>
-      </header>
-
-      {/* Article Body */}
-      <article className="prose prose-invert max-w-none text-zinc-300 space-y-4 text-base leading-relaxed border-b border-zinc-800 pb-12 mb-8">
-        {article.content.split('\n\n').map((paragraph, index) => (
-          <p key={index} className="whitespace-pre-line">
-            {paragraph}
-          </p>
-        ))}
-      </article>
-
-      {/* Comments Section */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-2 text-lg font-['Outfit'] font-bold">
-          <MessageSquare size={18} className="text-[#84cc16]" />
-          <h2>Discussion ({comments.length})</h2>
-        </div>
-
-        {/* New Comment Input */}
-        <form onSubmit={handleAddComment} className="flex gap-2">
-          <input
-            type="text"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Add to the discussion..."
-            className="flex-1 bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="px-4 py-3 bg-[#84cc16] text-black font-['JetBrains_Mono'] font-bold text-xs uppercase hover:bg-lime-400 transition-colors flex items-center gap-1.5"
-          >
-            <Send size={14} />
-            <span className="hidden sm:inline">Post</span>
-          </button>
-        </form>
-
-        {/* Comment List */}
-        <div className="space-y-3 pt-2">
-          {comments.map((comment) => (
-            <div key={comment.id} className="bg-zinc-950 border border-zinc-800 p-4 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-['JetBrains_Mono'] font-bold text-[#84cc16]">
-                  @{comment.author}
-                </span>
-                <span className="text-[11px] font-['JetBrains_Mono'] text-zinc-500">
-                  {comment.time}
-                </span>
-              </div>
-              <p className="text-sm text-zinc-300">{comment.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      )}
     </div>
-  );
+  )
 }

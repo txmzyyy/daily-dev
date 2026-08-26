@@ -1,81 +1,73 @@
-import React, { useState } from 'react';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import clsx from 'clsx'
 
-export default function SignUp({ onNavigate }) {
-  const [role, setRole] = useState('developer');
+export default function SignUp() {
+  const navigate = useNavigate()
+  const [role, setRole] = useState('developer') // 'developer' | 'writer'
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
+
+  const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    navigate('/onboarding/interests')
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 p-6 sm:p-8 space-y-6">
-        <div className="space-y-2 text-center sm:text-left">
-          <h1 className="font-['Outfit'] text-2xl sm:text-3xl font-extrabold">Join the community</h1>
-          <p className="text-zinc-400 text-xs sm:text-sm">Create your developer account.</p>
-        </div>
+    <div className="screen">
+      <button className="btn-icon btn-secondary" onClick={() => navigate(-1)} style={{ marginBottom: 24 }}>
+        <ArrowLeft size={18} />
+      </button>
 
-        <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-900 border border-zinc-800">
-          <button
-            type="button"
-            onClick={() => setRole('developer')}
-            className={`py-2 text-xs font-['JetBrains_Mono'] uppercase transition-colors ${
-              role === 'developer' ? 'bg-[#7c3aed] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Developer
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole('writer')}
-            className={`py-2 text-xs font-['JetBrains_Mono'] uppercase transition-colors ${
-              role === 'writer' ? 'bg-[#7c3aed] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Tech Writer
-          </button>
-        </div>
+      <h1 style={{ fontSize: 28, marginBottom: 6 }}>Join the community.</h1>
+      <p className="muted" style={{ marginBottom: 28 }}>Create a free developer account.</p>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <div className="space-y-1">
-            <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Full Name</label>
-            <input
-              type="text"
-              placeholder="Jane Doe"
-              className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Email</label>
-            <input
-              type="email"
-              placeholder="you@company.dev"
-              className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            onClick={() => onNavigate?.('onboarding-interests')}
-            className="w-full bg-[#84cc16] text-black font-['JetBrains_Mono'] font-bold py-3 uppercase text-xs hover:bg-lime-400 transition-colors"
-          >
-            Create Account &rarr;
-          </button>
-        </form>
-
-        <p className="text-center text-xs text-zinc-500 font-['JetBrains_Mono']">
-          Already have an account?{' '}
-          <button onClick={() => onNavigate?.('login')} className="text-[#84cc16] underline">
-            Log In
-          </button>
-        </p>
+      <div className="mono muted" style={{ marginBottom: 8 }}>I am a —</div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+        <button
+          type="button"
+          className={clsx('chip', role === 'developer' && 'selected')}
+          style={{ flex: 1, textAlign: 'center' }}
+          onClick={() => setRole('developer')}
+        >
+          Developer
+        </button>
+        <button
+          type="button"
+          className={clsx('chip', role === 'writer' && 'selected')}
+          style={{ flex: 1, textAlign: 'center' }}
+          onClick={() => setRole('writer')}
+        >
+          Tech Writer
+        </button>
       </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="field-row">
+          <div className="field">
+            <label className="mono muted">Name</label>
+            <input placeholder="Your full name" value={form.name} onChange={update('name')} required />
+          </div>
+          <div className="field">
+            <label className="mono muted">Email</label>
+            <input type="email" placeholder="you@company.dev" value={form.email} onChange={update('email')} required />
+          </div>
+        </div>
+        <div className="field">
+          <label className="mono muted">Password</label>
+          <input type="password" placeholder="••••••••" value={form.password} onChange={update('password')} required />
+        </div>
+
+        <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>
+          Continue
+        </button>
+      </form>
+
+      <p className="muted" style={{ textAlign: 'center', marginTop: 20 }}>
+        Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login') }} style={{ color: 'var(--lime)' }}>Log in</a>
+      </p>
     </div>
-  );
+  )
 }

@@ -1,57 +1,48 @@
-import React from 'react';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext.jsx'
 
-export default function ProfileEdit({ onNavigate }) {
+export default function ProfileEdit() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    bio: 'Senior engineer. Loves distributed systems and coffee.',
+    password: '',
+  })
+
+  const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
+
+  const save = (e) => {
+    e.preventDefault()
+    navigate('/profile')
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-4 sm:p-6 max-w-2xl mx-auto pb-24">
-      <div className="flex items-center justify-between mb-8 border-b border-zinc-800 pb-4">
-        <h1 className="font-['Outfit'] text-2xl font-bold">Edit Profile</h1>
-        <button
-          onClick={() => onNavigate?.('profile-view')}
-          className="text-xs font-['JetBrains_Mono'] text-zinc-400 hover:text-white"
-        >
-          Cancel
-        </button>
-      </div>
+    <div className="screen">
+      <button className="btn-icon btn-secondary" onClick={() => navigate(-1)} style={{ marginBottom: 20 }}>
+        <ArrowLeft size={18} />
+      </button>
 
-      <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-        <div className="space-y-2">
-          <label className="text-xs font-['JetBrains_Mono'] text-zinc-400 uppercase">Display Name</label>
-          <input
-            type="text"
-            defaultValue="Alex Rivers"
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-          />
+      <h1 style={{ fontSize: 24, marginBottom: 20 }}>Edit profile</h1>
+
+      <form onSubmit={save}>
+        <div className="field">
+          <label className="mono muted">Name</label>
+          <input value={form.name} onChange={update('name')} />
+        </div>
+        <div className="field">
+          <label className="mono muted">Bio</label>
+          <textarea rows={3} value={form.bio} onChange={update('bio')} />
+        </div>
+        <div className="field">
+          <label className="mono muted">New password</label>
+          <input type="password" placeholder="Leave blank to keep current" value={form.password} onChange={update('password')} />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-['JetBrains_Mono'] text-zinc-400 uppercase">Bio</label>
-          <textarea
-            defaultValue="Senior Fullstack Engineer working with React, Node, and Rust."
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none h-24"
-          />
-        </div>
-
-        <div className="pt-4 border-t border-zinc-800 space-y-4">
-          <h3 className="font-['Outfit'] text-base font-semibold text-zinc-200">Change Password</h3>
-          <input
-            type="password"
-            placeholder="Current Password"
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-          />
-          <input
-            type="password"
-            placeholder="New Password"
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-[#7c3aed] text-white font-['JetBrains_Mono'] font-bold py-3 uppercase text-xs hover:bg-violet-600 transition-colors"
-        >
-          Save Changes
-        </button>
+        <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>Save changes</button>
       </form>
     </div>
-  );
+  )
 }

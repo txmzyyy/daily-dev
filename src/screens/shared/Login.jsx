@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { useAuth } from '../../App.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 const DEMO_ROLES = ['user', 'writer', 'admin']
 

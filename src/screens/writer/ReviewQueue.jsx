@@ -1,130 +1,79 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Check, Flag } from 'lucide-react'
+import ModalShell from '../../components/common/ModalShell.jsx'
 
-export default function EditContent({ onNavigate }) {
-  const [form, setForm] = useState({
-    title: 'React Server Components Are Changing How We Think About State',
-    type: 'article',
-    url: 'https://dev.to/react/rsc-state-management-2026',
-    category: 'Frontend',
-    summary: 'A deep dive into RSC architecture, why client/server boundaries matter, and how streaming changes state models.'
-  });
+const INITIAL_QUEUE = [
+  { id: 1, title: 'Building Resilient Microservices', author: 'ops_alex' },
+  { id: 2, title: 'A Beginner Guide to WASM', author: 'newdev_ray' },
+]
 
-  const handleChange = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+const FLAG_REASONS = ['Spam', 'Misinformation', 'Guideline violation']
+
+export default function ReviewQueue() {
+  const navigate = useNavigate()
+  const [queue, setQueue] = useState(INITIAL_QUEUE)
+  const [flagging, setFlagging] = useState(null)
+  const [reason, setReason] = useState(FLAG_REASONS[0])
+  const [notes, setNotes] = useState('')
+
+  const approve = (id) => setQueue(queue.filter((q) => q.id !== id))
+
+  const submitFlag = (e) => {
+    e.preventDefault()
+    setQueue(queue.filter((q) => q.id !== flagging.id))
+    setFlagging(null)
+    setNotes('')
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-4 sm:p-6 md:p-8 max-w-4xl mx-auto pb-24">
-      <button
-        onClick={() => onNavigate?.('writer-dashboard')}
-        className="flex items-center gap-2 text-xs font-['JetBrains_Mono'] text-zinc-400 hover:text-white mb-6 p-2 border border-zinc-800 bg-zinc-950/60 w-fit transition-colors"
-      >
-        <ArrowLeft size={16} />
-        <span>BACK TO DASHBOARD</span>
+    <div className="screen">
+      <button className="btn-icon btn-secondary" onClick={() => navigate(-1)} style={{ marginBottom: 20 }}>
+        <ArrowLeft size={18} />
       </button>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4 mb-8">
-        <div>
-          <span className="text-[10px] font-['JetBrains_Mono'] uppercase font-bold px-2 py-0.5 bg-[#7c3aed]/20 text-[#7c3aed] border border-[#7c3aed]/40">
-            Edit Mode
-          </span>
-          <h1 className="font-['Outfit'] text-2xl sm:text-3xl font-extrabold mt-2">
-            Edit Content
-          </h1>
-        </div>
-        <button
-          onClick={() => onNavigate?.('writer-dashboard')}
-          className="self-start sm:self-auto p-2 text-xs font-['JetBrains_Mono'] uppercase border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-1.5"
-        >
-          <Trash2 size={14} />
-          <span>Delete Post</span>
-        </button>
-      </div>
+      <h1 style={{ fontSize: 24, marginBottom: 20 }}>Content Review Queue</h1>
 
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-        <div>
-          <label className="block text-xs font-['JetBrains_Mono'] text-zinc-400 uppercase mb-2">Content Format</label>
-          <div className="grid grid-cols-3 gap-2">
-            {['article', 'video', 'audio'].map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setForm({ ...form, type: t })}
-                className={`py-2.5 text-xs font-['JetBrains_Mono'] uppercase border ${
-                  form.type === t
-                    ? 'bg-[#7c3aed] border-[#7c3aed] text-white font-bold'
-                    : 'bg-zinc-950 border-zinc-800 text-zinc-400'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+      {queue.length === 0 ? (
+        <div className="empty-state">Nothing pending review.</div>
+      ) : (
+        <div className="stack-grid">
+          {queue.map((item) => (
+            <div key={item.id} className="card">
+              <div className="card-body">
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                <div className="muted mono" style={{ fontSize: 11, marginBottom: 12 }}>by {item.author}</div>
+                <div className="action-row">
+                  <button className="btn btn-primary" style={{ width: 'auto', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => approve(item.id)}>
+                    <Check size={14} /> Approve
+                  </button>
+                  <button className="btn btn-danger" style={{ width: 'auto', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setFlagging(item)}>
+                    <Flag size={14} /> Flag
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+      )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Title</label>
-            <input
-              type="text"
-              value={form.title}
-              onChange={handleChange('title')}
-              className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Canonical URL</label>
-            <input
-              type="url"
-              value={form.url}
-              onChange={handleChange('url')}
-              className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Category</label>
-          <select
-            value={form.category}
-            onChange={handleChange('category')}
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none text-zinc-200"
-          >
-            <option>Frontend</option>
-            <option>Backend</option>
-            <option>DevOps</option>
-            <option>Mobile</option>
-          </select>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-['JetBrains_Mono'] text-zinc-400 uppercase">Summary</label>
-          <textarea
-            rows={4}
-            value={form.summary}
-            onChange={handleChange('summary')}
-            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm focus:border-[#7c3aed] focus:outline-none"
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
-          <button
-            type="button"
-            onClick={() => onNavigate?.('writer-dashboard')}
-            className="px-5 py-2.5 bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-['JetBrains_Mono'] uppercase"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            onClick={() => onNavigate?.('writer-dashboard')}
-            className="px-6 py-2.5 bg-[#84cc16] text-black font-['JetBrains_Mono'] font-bold text-xs uppercase hover:bg-lime-400 transition-colors flex items-center gap-2"
-          >
-            <Save size={14} />
-            <span>Update Post</span>
-          </button>
-        </div>
-      </form>
+      {flagging && (
+        <ModalShell title={`Flag "${flagging.title}"`} onClose={() => setFlagging(null)}>
+          <form onSubmit={submitFlag}>
+            <div className="field">
+              <label className="mono muted">Reason</label>
+              <select value={reason} onChange={(e) => setReason(e.target.value)} style={{ width: '100%', padding: 12, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)' }}>
+                {FLAG_REASONS.map((r) => <option key={r}>{r}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label className="mono muted">Notes</label>
+              <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional context (optional)" />
+            </div>
+            <button type="submit" className="btn btn-danger">Submit flag</button>
+          </form>
+        </ModalShell>
+      )}
     </div>
-  );
+  )
 }

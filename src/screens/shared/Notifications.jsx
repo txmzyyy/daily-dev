@@ -1,42 +1,73 @@
-import React from 'react';
+import { Bell, MessageCircle, Flag, CheckCircle } from 'lucide-react'
+import Button from '../../components/common/Button.jsx'
+import { useNotifications } from '../../context/NotificationsContext.jsx'
 
+const ICONS = { content: Bell, reply: MessageCircle, flag: Flag, approval: CheckCircle }
+
+/**
+ * Notifications — reads from the shared NotificationsContext so the
+ * unread dot on Header/BottomNav always agrees with what's shown here.
+ *
+ * Trigger for clearing unread state is deliberate, not automatic:
+ *   - tapping an individual item marks just that one read
+ *   - "Mark all read" clears everything at once
+ * (Previously this fired markAllRead() on mount, which cleared the dot
+ * before the person had actually looked at anything.)
+ */
 export default function Notifications() {
-  const notifications = [
-    { id: 1, type: 'approval', title: 'Article Approved', detail: '"React Server Components Deep Dive" was published.', time: '2m ago', read: false },
-    { id: 2, type: 'reply', title: 'New Reply', detail: 'alex_dev replied to your comment on Rust Async patterns.', time: '1h ago', read: false },
-    { id: 3, type: 'category', title: 'Trending in Frontend', detail: '5 new articles added to Frontend today.', time: '4h ago', read: true }
-  ];
+  const { items, unreadCount, markAllRead, markRead } = useNotifications()
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-4 sm:p-6 max-w-4xl mx-auto pb-24">
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
-        <h1 className="font-['Outfit'] text-2xl sm:text-3xl font-bold">Notifications</h1>
-        <button className="text-xs text-[#84cc16] font-['JetBrains_Mono'] hover:underline">
-          MARK ALL READ
-        </button>
+    <div className="screen">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12 }}>
+        <h1 style={{ fontSize: 24 }}>Notifications</h1>
+        {unreadCount > 0 && (
+          <Button variant="secondary" size="sm" block={false} onClick={markAllRead}>
+            Mark all read
+          </Button>
+        )}
       </div>
 
-      <div className="space-y-3">
-        {notifications.map((n) => (
-          <div
-            key={n.id}
-            className={`p-4 border transition-all flex items-start justify-between gap-4 ${
-              n.read ? 'bg-zinc-950 border-zinc-800 opacity-60' : 'bg-zinc-900 border-[#7c3aed]/40'
-            }`}
-          >
-            <div className="space-y-1">
-              <span className="text-[10px] font-['JetBrains_Mono'] uppercase px-2 py-0.5 bg-zinc-800 text-zinc-300">
-                {n.type}
-              </span>
-              <h4 className="font-semibold text-sm sm:text-base text-zinc-100">{n.title}</h4>
-              <p className="text-xs sm:text-sm text-zinc-400">{n.detail}</p>
-            </div>
-            <span className="text-[11px] font-['JetBrains_Mono'] text-zinc-500 whitespace-nowrap">
-              {n.time}
-            </span>
-          </div>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <div className="empty-state">You're all caught up.</div>
+      ) : (
+        items.map((n) => {
+          const Icon = ICONS[n.type] || Bell
+          return (
+            <button
+              key={n.id}
+              onClick={() => markRead(n.id)}
+              className="card"
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                border: 'none',
+                padding: 0,
+                opacity: n.read ? 0.6 : 1,
+                cursor: n.read ? 'default' : 'pointer',
+              }}
+            >
+              <div className="card-body" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', position: 'relative' }}>
+                {!n.read && (
+                  <span
+                    style={{
+                      position: 'absolute', top: 16, right: 14,
+                      width: 7, height: 7, borderRadius: '50%',
+                      background: 'var(--danger)',
+                    }}
+                  />
+                )}
+                <Icon size={18} color="var(--violet)" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <div style={{ marginBottom: 4, color: 'var(--text)' }}>{n.text}</div>
+                  <div className="muted mono" style={{ fontSize: 11 }}>{n.time}</div>
+                </div>
+              </div>
+            </button>
+          )
+        })
+      )}
     </div>
-  );
+  )
 }

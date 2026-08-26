@@ -1,46 +1,59 @@
-import React, { useState } from 'react';
+import { useState } from 'react'
+import { SearchIcon, FileText, Video, Headphones } from 'lucide-react'
+import clsx from 'clsx'
+import ContentCard from '../../components/content/ContentCard.jsx'
+import { MOCK_CONTENT } from '../../data/mockContent.js'
+
+const TYPES = [
+  { key: 'article', label: 'Article', icon: FileText },
+  { key: 'video', label: 'Video', icon: Video },
+  { key: 'audio', label: 'Audio', icon: Headphones },
+]
 
 export default function Search() {
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState(null)
+
+  const results = MOCK_CONTENT.filter((item) => {
+    const matchesQuery = item.title.toLowerCase().includes(query.toLowerCase())
+    const matchesType = !typeFilter || item.type === typeFilter
+    return matchesQuery && matchesType
+  })
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-4 sm:p-6 max-w-4xl mx-auto pb-24">
-      <div className="space-y-4 mb-6">
+    <div className="screen">
+      <h1 style={{ fontSize: 24, marginBottom: 16 }}>Search</h1>
+
+      <div style={{ position: 'relative', marginBottom: 16 }}>
+        <SearchIcon size={18} style={{ position: 'absolute', left: 14, top: 14, color: 'var(--muted)' }} />
         <input
-          type="search"
+          style={{ paddingLeft: 40 }}
+          placeholder="Search articles, videos, audio..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search articles, videos, or tags..."
-          className="w-full bg-zinc-900 border border-zinc-800 p-4 text-base focus:border-[#7c3aed] focus:outline-none"
         />
+      </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {['all', 'article', 'video', 'audio'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs font-['JetBrains_Mono'] uppercase border whitespace-nowrap ${
-                filter === f
-                  ? 'bg-[#7c3aed] border-[#7c3aed] text-white'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-400'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {TYPES.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            className={clsx('chip', typeFilter === key && 'selected')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px' }}
+            onClick={() => setTypeFilter(typeFilter === key ? null : key)}
+          >
+            <Icon size={14} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {results.length === 0 ? (
+        <div className="empty-state">No results found. Try a different search.</div>
+      ) : (
+        <div className="content-grid">
+          {results.map((item) => <ContentCard key={item.id} content={item} />)}
         </div>
-      </div>
-
-      <div className="border-t border-zinc-800 pt-6">
-        {!query ? (
-          <p className="text-center text-zinc-500 font-['JetBrains_Mono'] text-sm py-12">
-            TYPE A QUERY TO SEARCH CONTENT
-          </p>
-        ) : (
-          <p className="text-zinc-400 text-sm">Showing results for "{query}"...</p>
-        )}
-      </div>
+      )}
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, Search, Plus, Bell, User, LayoutDashboard, ShieldAlert } from 'lucide-react'
 import clsx from 'clsx'
-import { useAuth } from '../../App.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 import { useNotifications } from '../../context/NotificationsContext.jsx'
 
 /**

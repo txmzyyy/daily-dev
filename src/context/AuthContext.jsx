@@ -1,81 +1,26 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react'
 
-const AuthContext = createContext(null);
+/**
+ * AuthContext — holds the current user + role, and the "demo quick login"
+ * used across the app (see LogIn.jsx). Previously this lived inline in
+ * App.jsx; moved here since the real project expects a standalone
+ * context/AuthContext.jsx file.
+ */
+const AuthContext = createContext(null)
+export const useAuth = () => useContext(AuthContext)
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('dev_app_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null) // null = logged out
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('dev_app_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('dev_app_user');
-    }
-  }, [user]);
-
-  // Mock Authentication Handlers
-  const login = (email, password) => {
-    const mockUser = {
-      id: 'usr_101',
-      name: 'Alex Rivera',
-      email,
-      role: 'developer', // Default role
-      interests: ['React', 'TypeScript', 'System Design']
-    };
-    setUser(mockUser);
-    return mockUser;
-  };
-
-  const signup = ({ name, email, password, role = 'developer' }) => {
-    const newUser = {
-      id: `usr_${Date.now()}`,
-      name,
-      email,
-      role,
-      interests: []
-    };
-    setUser(newUser);
-    return newUser;
-  };
-
-  const logout = () => {
-    setUser(null);
-  };
-
-  const setRole = (role) => {
-    setUser((prev) => (prev ? { ...prev, role } : null));
-  };
-
-  const updateInterests = (interests) => {
-    setUser((prev) => (prev ? { ...prev, interests } : null));
-  };
-
-  const updateProfile = (updates) => {
-    setUser((prev) => (prev ? { ...prev, ...updates } : null));
-  };
-
-  const value = {
-    user,
-    isAuthenticated: !!user,
-    isWriter: user?.role === 'writer',
-    login,
-    signup,
-    logout,
-    setRole,
-    updateInterests,
-    updateProfile
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  const loginAs = (role) => {
+    setUser({ name: 'Demo User', role }) // role: 'user' | 'writer' | 'admin'
   }
-  return context;
-};
+
+  const logout = () => setUser(null)
+
+  return (
+    <AuthContext.Provider value={{ user, loginAs, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}

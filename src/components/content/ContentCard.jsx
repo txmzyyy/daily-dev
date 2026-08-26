@@ -38,7 +38,7 @@ export default function ContentCard({ content }) {
           >
             {content.readTime}
           </span>
-          )}
+        )}
       </div>
       <div className="card-body">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>

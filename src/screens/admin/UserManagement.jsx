@@ -2,16 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, UserPlus } from 'lucide-react'
 import ModalShell from '../../components/common/ModalShell.jsx'
+import { MOCK_USERS } from '../../data/mockUsers.js'
 
-const INITIAL_USERS = [
-  { id: 1, name: 'jane_dev', role: 'user', status: 'active' },
-  { id: 2, name: 'ops_alex', role: 'writer', status: 'active' },
-  { id: 3, name: 'newdev_ray', role: 'user', status: 'deactivated' },
-]
 
 export default function UserManagement() {
   const navigate = useNavigate()
-  const [users, setUsers] = useState(INITIAL_USERS)
+  const [users, setUsers] = useState(MOCK_USERS)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ email: '', role: 'user' })
 

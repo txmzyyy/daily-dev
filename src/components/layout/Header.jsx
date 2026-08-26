@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Bell } from 'lucide-react'
-import { useAuth } from '../../App.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 import { useNotifications } from '../../context/NotificationsContext.jsx'
 
 /**
