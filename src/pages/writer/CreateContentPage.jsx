@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AppLayout from '../../components/layout/AppLayout';
+import RichTextEditor from '../../components/common/RichTextEditor';
 import { addContent } from '../../features/content/contentSlice';
 
 export default function CreateContentPage() {
@@ -20,9 +21,19 @@ export default function CreateContentPage() {
     author: { name: 'Writer User', role: 'writer', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80' }
   });
 
+  const isArticle = formData.type === 'ARTICLE';
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(addContent(formData));
+    // Guard against submitting an empty Tiptap doc ("<p></p>")
+    const cleanContent =
+      isArticle && (!formData.content || formData.content === '<p></p>')
+        ? ''
+        : formData.content;
+
+    if (!cleanContent) return;
+
+    dispatch(addContent({ ...formData, content: cleanContent }));
     navigate('/writer/dashboard');
   };
 
@@ -53,7 +64,9 @@ export default function CreateContentPage() {
               <select
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value, content: '' })
+                }
               >
                 <option value="ARTICLE">ARTICLE</option>
                 <option value="VIDEO">VIDEO</option>
@@ -88,15 +101,26 @@ export default function CreateContentPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Body Content / URL</label>
-            <textarea
-              rows={5}
-              required
-              placeholder="Article body or video embed link..."
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            />
+            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">
+              {isArticle ? 'Article Body' : 'Video / Podcast URL'}
+            </label>
+
+            {isArticle ? (
+              <RichTextEditor
+                value={formData.content}
+                onChange={(html) => setFormData({ ...formData, content: html })}
+                placeholder="Write your article... use the toolbar for headings, lists, code, and more."
+              />
+            ) : (
+              <input
+                type="url"
+                required
+                placeholder="https://youtube.com/watch?v=... or podcast stream URL"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              />
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-2">

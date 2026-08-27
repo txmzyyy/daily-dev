@@ -56,3 +56,24 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+/* Tiptap editor: match the dark theme, no focus outline (the wrapper handles that) */
+.ProseMirror {
+  outline: none;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #52525b;
+  pointer-events: none;
+  height: 0;
+}
+.ProseMirror pre {
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+.ProseMirror code {
+  color: #34d399;
+}
