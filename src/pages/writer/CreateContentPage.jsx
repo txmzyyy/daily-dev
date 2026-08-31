@@ -1,118 +1,184 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AppLayout from '../../components/layout/AppLayout';
-import { addContent } from '../../features/content/contentSlice';
+import { submitContent } from '../../features/content/contentSlice';
+import { fetchCategories } from '../../features/categories/categorySlice';
+import { Upload, FileAudio, FileVideo } from 'lucide-react';
 
 export default function CreateContentPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { categories } = useSelector((state) => state.categories);
+  const { status, error } = useSelector((state) => state.content);
 
   const [formData, setFormData] = useState({
     title: '',
-    summary: '',
-    type: 'ARTICLE',
-    category: categories[0] || 'Frontend',
-    readTime: '5 min read',
-    content: '',
-    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80',
-    author: { name: 'Writer User', role: 'writer', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80' }
+    type: 'article',
+    category_id: '',
+    body_or_url: '',
+    media_file: null,
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(addContent(formData));
-    navigate('/writer/dashboard');
+  useEffect(() => {
+    if (categories.length === 0) dispatch(fetchCategories());
+  }, [dispatch, categories.length]);
+
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category_id) {
+      setFormData((prev) => ({ ...prev, category_id: categories[0].id }));
+    }
+  }, [categories, formData.category_id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, media_file: file }));
+  };
+
+  const handleTypeChange = (e) => {
+    const type = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      type,
+      media_file: null,
+      body_or_url: '',
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await dispatch(submitContent(formData)).unwrap();
+      navigate('/writer/dashboard');
+    } catch (err) {
+      console.error('Failed to submit content:', err);
+    }
+  };
+
+  const isMedia = formData.type === 'video' || formData.type === 'audio';
 
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Create Content Post</h1>
-          <p className="text-xs text-zinc-400">Share technical insights with the Moringa community.</p>
+          <p className="text-xs text-zinc-400 mt-1">
+            Share articles, videos, and audio with the Moringa community.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-4">
+        <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl space-y-5">
           <div>
             <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Content Title</label>
             <input
               type="text"
+              name="title"
               required
               placeholder="e.g. Building Async Microservices with Flask"
               className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={handleChange}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Type</label>
               <select
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                name="type"
+                required
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                onChange={handleTypeChange}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
               >
-                <option value="ARTICLE">ARTICLE</option>
-                <option value="VIDEO">VIDEO</option>
-                <option value="PODCAST">PODCAST</option>
+                <option value="article">Article</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio / Podcast</option>
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Category</label>
               <select
+                name="category_id"
+                required
+                value={formData.category_id}
+                onChange={handleChange}
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
-                {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Summary Description</label>
-            <textarea
-              rows={2}
-              required
-              placeholder="Brief introduction..."
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              value={formData.summary}
-              onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-            />
-          </div>
+          {isMedia ? (
+            <div className="space-y-3">
+              <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">
+                Upload {formData.type === 'video' ? 'Video' : 'Audio'}
+              </label>
 
-          <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Body Content / URL</label>
-            <textarea
-              rows={5}
-              required
-              placeholder="Article body or video embed link..."
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500"
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            />
-          </div>
+              <label className="flex flex-col items-center justify-center gap-2 min-h-40 border border-dashed border-zinc-700 rounded-xl bg-zinc-950 hover:border-indigo-500 cursor-pointer transition px-5 text-center">
+                {formData.type === 'video' ? <FileVideo size={28} className="text-indigo-400" /> : <FileAudio size={28} className="text-indigo-400" />}
+                <span className="text-sm text-zinc-200">
+                  {formData.media_file?.name || `Choose ${formData.type} file`}
+                </span>
+                <span className="text-xs text-zinc-500">or paste a hosted media URL below</span>
+                <Upload size={16} className="text-zinc-500" />
+                <input
+                  type="file"
+                  accept={formData.type === 'video' ? 'video/*' : 'audio/*'}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+
+              <input
+                type="url"
+                name="body_or_url"
+                placeholder={`Optional ${formData.type} URL`}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                value={formData.body_or_url}
+                onChange={handleChange}
+                required={!formData.media_file}
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1">Article Content</label>
+              <textarea
+                name="body_or_url"
+                rows={10}
+                required
+                placeholder="Write your article here..."
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"
+                value={formData.body_or_url}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+
+          {error && <p className="text-xs text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => navigate('/writer/dashboard')}
               className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-xl text-xs font-semibold"
-            >
-              Cancel
-            </button>
+            >Cancel</button>
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20"
-            >
-              Submit Post
-            </button>
+              disabled={status === 'loading' || categories.length === 0 || !formData.category_id}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-xs font-semibold"
+            >{status === 'loading' ? 'Submitting...' : 'Submit Post'}</button>
           </div>
         </form>
       </div>

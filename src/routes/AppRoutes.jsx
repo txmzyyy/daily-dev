@@ -15,6 +15,7 @@ import ProfilePage from '../pages/user/ProfilePage';
 import WriterDashboardPage from '../pages/writer/WriterDashboardPage';
 import CreateContentPage from '../pages/writer/CreateContentPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
+import ReportsPage from '../pages/admin/Reportspage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import CategoryManagementPage from '../pages/admin/CategoryManagementPage';
@@ -50,6 +51,7 @@ export default function AppRoutes() {
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/moderation" element={<ContentModerationPage />} />
         <Route path="/admin/categories" element={<CategoryManagementPage />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
       </Route>
 
       {/* 404 */}

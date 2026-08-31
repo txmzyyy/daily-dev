@@ -1,23 +1,79 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import * as api from './notificationApi';
+
+export const loadNotifications = createAsyncThunk(
+  'notifications/loadNotifications',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      return await api.fetchNotifications(getState().auth.token);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const markAsRead = createAsyncThunk(
+  'notifications/markAsRead',
+  async (id, { getState, rejectWithValue }) => {
+    try {
+      return await api.markNotificationRead(id, getState().auth.token);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const markAllAsRead = createAsyncThunk(
+  'notifications/markAllAsRead',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      await api.markAllNotificationsRead(getState().auth.token);
+      return true;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
 const initialState = {
-  notifications: [
-    { id: 'n1', title: 'New Frontend Article', message: 'Priya Nair posted React Server Components guide', time: '2 hours ago', read: false },
-    { id: 'n2', title: 'DevOps Content Updated', message: 'New Video uploaded in DevOps section', time: '1 day ago', read: true },
-  ],
-  unreadCount: 1,
+  notifications: [],
+  unreadCount: 0,
+  status: 'idle',
+  error: null,
 };
 
 const notificationSlice = createSlice({
   name: 'notifications',
   initialState,
-  reducers: {
-    markAllAsRead: (state) => {
-      state.notifications.forEach(n => n.read = true);
-      state.unreadCount = 0;
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadNotifications.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(loadNotifications.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.notifications = action.payload;
+        state.unreadCount = action.payload.filter((n) => !n.is_read).length;
+      })
+      .addCase(loadNotifications.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(markAsRead.fulfilled, (state, action) => {
+        const id = action.payload?.id;
+        const notification = state.notifications.find((n) => n.id === id);
+        if (notification && !notification.is_read) {
+          notification.is_read = true;
+          state.unreadCount = Math.max(0, state.unreadCount - 1);
+        }
+      })
+      .addCase(markAllAsRead.fulfilled, (state) => {
+        state.notifications.forEach((n) => { n.is_read = true; });
+        state.unreadCount = 0;
+      });
   },
 });
 
-export const { markAllAsRead } = notificationSlice.actions;
 export default notificationSlice.reducer;

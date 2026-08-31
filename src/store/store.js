@@ -14,3 +14,5 @@ export const store = configureStore({
     notifications: notificationReducer,
   },
 });
+
+export default store;
