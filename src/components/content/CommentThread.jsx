@@ -1,8 +1,5 @@
-
-import React, {
-  useState,
-  useEffect,
-} from 'react';
+import toast from 'react-hot-toast';
+import React, { useState, useEffect } from 'react';
 
 import {
   useDispatch,
@@ -20,12 +17,12 @@ import {
   submitComment,
 } from '../../features/content/contentSlice';
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
-/*COMMENT COMPONENT*/
+/* =========================
+   COMMENT COMPONENT
+========================= */
 
 function Comment({
   comment,
@@ -33,25 +30,20 @@ function Comment({
   currentUser,
   onCommentDeleted,
 }) {
-  const [replying, setReplying] =
-    useState(false);
-
-  const [replyText, setReplyText] =
-    useState('');
-
-  const [deleting, setDeleting] =
-    useState(false);
+  const [replying, setReplying] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const dispatch = useDispatch();
 
   const token =
-    useSelector(
-      (state) => state.auth.token
-    ) ||
+    useSelector((state) => state.auth.token) ||
     localStorage.getItem('token');
 
 
-  /* REPLY */
+  /* =========================
+     REPLY
+  ========================= */
 
   const handleReplySubmit = () => {
     if (!replyText.trim()) {
@@ -59,9 +51,7 @@ function Comment({
     }
 
     if (!token) {
-      alert(
-        'Please log in to reply.'
-      );
+      toast.error('Please log in to reply.');
       return;
     }
 
@@ -69,8 +59,7 @@ function Comment({
       submitComment({
         content_id: contentId,
         text: replyText,
-        parent_comment_id:
-          comment.id,
+        parent_comment_id: comment.id,
       })
     );
 
@@ -79,7 +68,9 @@ function Comment({
   };
 
 
-  /*CHECK COMMENT OWNER*/
+  /* =========================
+     CHECK COMMENT OWNER
+  ========================= */
 
   const commentUserId =
     comment.user_id ??
@@ -101,17 +92,21 @@ function Comment({
     currentUser?.role === 'admin';
 
 
-  /*DELETE PERMISSION*/
+  /* =========================
+     DELETE PERMISSION
+  ========================= */
 
   const canDelete =
     isOwner || isAdmin;
 
 
-  /*DELETE COMMENT*/
+  /* =========================
+     DELETE COMMENT
+  ========================= */
 
   const handleDelete = async () => {
     if (!token) {
-      alert(
+      toast.error(
         'Please log in to delete comments.'
       );
       return;
@@ -150,7 +145,9 @@ function Comment({
         );
       }
 
-     
+      toast.success(
+        'Comment deleted successfully.'
+      );
 
       if (onCommentDeleted) {
         onCommentDeleted();
@@ -162,17 +159,20 @@ function Comment({
         err
       );
 
-      alert(
+      toast.error(
         err.message ||
         'Failed to delete comment.'
       );
+
     } finally {
       setDeleting(false);
     }
   };
 
 
-  /* RENDER*/
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/60">
@@ -329,7 +329,9 @@ function Comment({
 }
 
 
-/*COMMENT THREAD*/
+/* =========================
+   COMMENT THREAD
+========================= */
 
 export default function CommentThread({
   contentId,
@@ -346,7 +348,9 @@ export default function CommentThread({
     useState('');
 
 
-  /*LOAD COMMENTS */
+  /* =========================
+     LOAD COMMENTS
+  ========================= */
 
   useEffect(() => {
     if (contentId) {
@@ -360,7 +364,9 @@ export default function CommentThread({
   ]);
 
 
-  /*POST COMMENT*/
+  /* =========================
+     POST COMMENT
+  ========================= */
 
   const handlePost = () => {
     if (!newComment.trim()) {
@@ -371,7 +377,7 @@ export default function CommentThread({
       localStorage.getItem('token');
 
     if (!token) {
-      alert(
+      toast.error(
         'Please log in to comment.'
       );
       return;
@@ -388,7 +394,9 @@ export default function CommentThread({
   };
 
 
-  /*RELOAD AFTER DELETE*/
+  /* =========================
+     RELOAD AFTER DELETE
+  ========================= */
 
   const handleCommentDeleted = () => {
     dispatch(
@@ -397,7 +405,9 @@ export default function CommentThread({
   };
 
 
-  /*RENDER*/
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <div className="mt-8 space-y-6">

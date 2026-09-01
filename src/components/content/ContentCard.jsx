@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -5,12 +6,15 @@ import {
   ThumbsUp,
   MessageSquare,
   Bookmark,
+  Play,
 } from 'lucide-react';
 
 import {
   toggleWishlist,
   toggleLike,
 } from '../../features/content/contentSlice';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ContentCard({ item }) {
   const dispatch = useDispatch();
@@ -28,15 +32,141 @@ export default function ContentCard({ item }) {
     date,
     thumbnail,
     isWishlisted,
+    body_or_url,
   } = item;
+
+ 
+  const mediaUrl = body_or_url
+    ? body_or_url.startsWith('http')
+      ? body_or_url
+      : `${BASE_URL}${body_or_url}`
+    : null;
+
+
+  const isYouTube = (url) => {
+    if (!url) return false;
+
+    return (
+      url.includes('youtube.com/watch') ||
+      url.includes('youtu.be/') ||
+      url.includes('youtube.com/embed/')
+    );
+  };
+
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+
+    if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+
+    if (url.includes('youtube.com/watch')) {
+      try {
+        const parsedUrl = new URL(url);
+        const videoId = parsedUrl.searchParams.get('v');
+
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}`;
+        }
+      } catch (error) {
+        console.error('Invalid YouTube URL:', error);
+      }
+    }
+
+    return null;
+  };
+
+  const youtubeEmbedUrl = isYouTube(body_or_url)
+    ? getYouTubeEmbedUrl(body_or_url)
+    : null;
+
+  const renderMedia = () => {
+    if (!body_or_url) return null;
+
+    if (type === 'video' && youtubeEmbedUrl) {
+      return (
+        <div className="relative w-full aspect-video bg-black">
+          <iframe
+            src={youtubeEmbedUrl}
+            title={title}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      );
+    }
+
+    if (type === 'video') {
+      return (
+        <div className="relative w-full bg-black">
+          <video
+            controls
+            preload="metadata"
+            className="w-full max-h-[500px] object-contain"
+          >
+            <source src={mediaUrl} />
+            Your browser does not support video playback.
+          </video>
+
+          <div className="absolute top-3 left-3">
+            <span className="bg-zinc-950/90 backdrop-blur-md text-emerald-400 text-[11px] font-mono font-bold tracking-wider uppercase px-2.5 py-1 rounded-md border border-zinc-800">
+              Video
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    if (type === 'audio') {
+      return (
+        <div className="bg-zinc-950 p-5 border-b border-zinc-800">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+              <Play size={18} className="text-white" />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {title}
+              </p>
+
+              <p className="text-xs text-zinc-500">
+                Audio / Podcast
+              </p>
+            </div>
+          </div>
+
+          <audio
+            controls
+            preload="metadata"
+            className="w-full"
+          >
+            <source src={mediaUrl} />
+            Your browser does not support audio playback.
+          </audio>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="bg-[#18181b] border border-[#27272a] rounded-xl overflow-hidden mb-5 transition hover:border-zinc-700 shadow-lg">
 
-      {/* Thumbnail */}
+     {(type === 'video' || type === 'audio') && renderMedia()}
 
-      {thumbnail && (
-        <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-zinc-900 group">
+      {type === 'article' && thumbnail && (
+
+    <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-zinc-900 group">
 
           <img
             src={thumbnail}
@@ -62,7 +192,7 @@ export default function ContentCard({ item }) {
       )}
 
 
-      {/* Body */}
+      {/*BODY*/}
 
       <div className="p-5">
 
@@ -72,7 +202,9 @@ export default function ContentCard({ item }) {
             {category}
           </span>
 
-          <span>{date}</span>
+          <span>
+            {date}
+          </span>
 
         </div>
 
@@ -86,16 +218,20 @@ export default function ContentCard({ item }) {
         </Link>
 
 
-        {summary && (
+        {/* Article text */}
+
+        {type === 'article' && summary && (
           <p className="text-sm text-zinc-400 mb-4 line-clamp-2 leading-relaxed">
             {summary}
           </p>
         )}
 
 
-        {/* Footer */}
+        {/*FOOTER*/}
 
         <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-xs text-zinc-400">
+
+          {/* Author */}
 
           <div className="flex items-center gap-2.5">
 
@@ -118,6 +254,8 @@ export default function ContentCard({ item }) {
           </div>
 
 
+          {/* Actions */}
+
           <div className="flex items-center gap-4">
 
             {/* Like */}
@@ -130,7 +268,9 @@ export default function ContentCard({ item }) {
             >
               <ThumbsUp size={15} />
 
-              <span>{likes || 0}</span>
+              <span>
+                {likes || 0}
+              </span>
             </button>
 
 
@@ -142,7 +282,9 @@ export default function ContentCard({ item }) {
             >
               <MessageSquare size={15} />
 
-              <span>{commentsCount || 0}</span>
+              <span>
+                {commentsCount || 0}
+              </span>
             </Link>
 
 
@@ -177,3 +319,4 @@ export default function ContentCard({ item }) {
     </div>
   );
 }
+
