@@ -11,7 +11,9 @@ import {
 export default function ProfilePage() {
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector(
+    (state) => state.auth
+  );
 
   const {
     categories,
@@ -22,20 +24,24 @@ export default function ProfilePage() {
 
   useEffect(() => {
     dispatch(fetchCategories());
-    dispatch(loadSubscriptions());
-  }, [dispatch]);
+
+    if (isAuthenticated) {
+      dispatch(loadSubscriptions());
+    }
+  }, [dispatch, isAuthenticated]);
 
   const handleToggleSubscription = (categoryId) => {
+    if (!isAuthenticated) {
+      alert('Please create an account or sign in to subscribe to categories.');
+      return;
+    }
+
     if (subscribedCategoryIds.includes(categoryId)) {
       dispatch(unsubscribeCategory(categoryId));
     } else {
       dispatch(subscribeCategory(categoryId));
     }
   };
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <AppLayout>
@@ -44,24 +50,42 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex items-center gap-4">
 
-          <img
-            src={user.avatar || '/default-avatar.png'}
-            alt={user.name}
-            className="w-16 h-16 rounded-full object-cover ring-2 ring-indigo-500"
-          />
+          {/* Avatar */}
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user?.name || 'Profile'}
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-indigo-500"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+              <span className="text-xs text-zinc-500">
+                No avatar
+              </span>
+            </div>
+          )}
 
+          {/* Profile Information */}
           <div>
             <h2 className="text-xl font-bold text-white">
-              {user.name}
+              {user?.name || 'No name'}
             </h2>
 
             <p className="text-xs text-zinc-400">
-              {user.email}
+              {user?.email || 'No email'}
             </p>
 
-            <span className="inline-block mt-2 bg-indigo-600/20 text-indigo-400 text-[10px] font-mono px-2 py-0.5 rounded border border-indigo-500/30 uppercase">
-              Role: {user.role}
-            </span>
+            {!user && (
+              <p className="text-xs text-zinc-500 mt-1">
+                No personal information
+              </p>
+            )}
+
+            {user?.role && (
+              <span className="inline-block mt-2 bg-indigo-600/20 text-indigo-400 text-[10px] font-mono px-2 py-0.5 rounded border border-indigo-500/30 uppercase">
+                Role: {user.role}
+              </span>
+            )}
           </div>
         </div>
 
@@ -86,9 +110,8 @@ export default function ProfilePage() {
             <div className="flex flex-wrap gap-2 pt-2">
 
               {categories.map((category) => {
-                const isSubscribed = subscribedCategoryIds.includes(
-                  category.id
-                );
+                const isSubscribed =
+                  subscribedCategoryIds.includes(category.id);
 
                 return (
                   <button

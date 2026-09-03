@@ -4,10 +4,7 @@ import * as api from './contentApi';
 
 //TRANSFORM CONTENT FROM BACKEND
 
-
-const MEDIA_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000';
+const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function resolveMediaUrl(value) {
   if (!value) return '';

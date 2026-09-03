@@ -20,6 +20,7 @@ import UserManagementPage from '../pages/admin/UserManagementPage';
 import ContentModerationPage from '../pages/admin/ContentModerationPage';
 import CategoryManagementPage from '../pages/admin/CategoryManagementPage';
 
+
 export default function AppRoutes() {
   return (
     <Routes>

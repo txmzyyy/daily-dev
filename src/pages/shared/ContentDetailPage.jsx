@@ -19,11 +19,10 @@ import {
   ThumbsUp,
   Bookmark,
   Trash2,
+  Flag,
 } from 'lucide-react';
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ContentDetailPage() {
   const { id } = useParams();
@@ -46,16 +45,16 @@ export default function ContentDetailPage() {
     (state) => state.content.error
   );
 
-  const token = useSelector(
-    (state) => state.auth.token
-  ) || localStorage.getItem('token');
+  const token =
+    useSelector((state) => state.auth.token) ||
+    localStorage.getItem('token');
 
   const [currentUser, setCurrentUser] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reporting, setReporting] = useState(false);
 
-
-  // LOAD CONTENT
- 
   useEffect(() => {
     if (!id) {
       return;
@@ -64,9 +63,6 @@ export default function ContentDetailPage() {
     dispatch(loadContentById(id));
   }, [dispatch, id]);
 
-  // LOAD WISHLIST
-  
-
   useEffect(() => {
     if (!token) {
       return;
@@ -74,10 +70,6 @@ export default function ContentDetailPage() {
 
     dispatch(loadWishlist());
   }, [dispatch, token]);
-
-  
-  //LOAD LOGGED-IN USER
-  
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -101,8 +93,8 @@ export default function ContentDetailPage() {
         if (!response.ok) {
           throw new Error(
             data.message ||
-            data.error ||
-            'Failed to load current user'
+              data.error ||
+              'Failed to load current user'
           );
         }
 
@@ -112,6 +104,7 @@ export default function ContentDetailPage() {
           'Failed to load current user:',
           err
         );
+
         setCurrentUser(null);
       }
     };
@@ -119,8 +112,63 @@ export default function ContentDetailPage() {
     loadCurrentUser();
   }, [token]);
 
-  // DELETE CONTENT
- 
+  const handleReport = async () => {
+    if (!token) {
+      alert('Please log in to report content.');
+      return;
+    }
+
+    if (!reportReason.trim()) {
+      alert('Please select a reason for reporting.');
+      return;
+    }
+
+    try {
+      setReporting(true);
+
+      const response = await fetch(
+        `${BASE_URL}/api/reports`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content_id: current.id,
+            reason: reportReason,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            'Failed to report content'
+        );
+      }
+
+      alert('Report submitted successfully.');
+
+      setReportReason('');
+      setShowReportForm(false);
+    } catch (err) {
+      console.error(
+        'Report content error:',
+        err
+      );
+
+      alert(
+        err.message ||
+          'Failed to submit report.'
+      );
+    } finally {
+      setReporting(false);
+    }
+  };
 
   const handleDeleteContent = async () => {
     if (!token || !current) {
@@ -153,8 +201,8 @@ export default function ContentDetailPage() {
       if (!response.ok) {
         throw new Error(
           data.message ||
-          data.error ||
-          'Failed to delete post'
+            data.error ||
+            'Failed to delete post'
         );
       }
 
@@ -169,15 +217,12 @@ export default function ContentDetailPage() {
 
       alert(
         err.message ||
-        'Failed to delete post.'
+          'Failed to delete post.'
       );
     } finally {
       setDeleting(false);
     }
   };
-
-//LOADING
- 
 
   if (status === 'loading' && !current) {
     return (
@@ -191,15 +236,10 @@ export default function ContentDetailPage() {
     );
   }
 
-
-//ERROR
-  
-
   if (status === 'failed' && !current) {
     return (
       <AppLayout>
         <div className="text-center py-20">
-
           <p className="text-red-400 mb-4">
             {error ||
               'Failed to load content.'}
@@ -211,19 +251,15 @@ export default function ContentDetailPage() {
           >
             Back to Feed
           </Link>
-
         </div>
       </AppLayout>
     );
   }
 
- 
-  // CONTENT NOT FOUND
   if (!current) {
     return (
       <AppLayout>
         <div className="text-center py-20">
-
           <p className="text-zinc-400 mb-4">
             Content not found.
           </p>
@@ -234,14 +270,10 @@ export default function ContentDetailPage() {
           >
             Back to Feed
           </Link>
-
         </div>
       </AppLayout>
     );
   }
-
-//PERMISSIONS
-  
 
   const isAdmin =
     currentUser?.role === 'admin';
@@ -252,23 +284,12 @@ export default function ContentDetailPage() {
   const canDeletePost =
     isAdmin || isWriter;
 
-  
-// WISHLIST STATUS
- 
-
   const isWishlisted =
     wishlistIds.includes(current.id);
 
-  
- // PAGE
-  
-
   return (
     <AppLayout>
-
       <div className="space-y-6">
-
-        {/* BACK TO FEED */}
 
         <Link
           to="/feed"
@@ -278,15 +299,8 @@ export default function ContentDetailPage() {
           Back to Feed
         </Link>
 
-
-        {/* HEADER */}
-
         <div>
-
-          {/* Category + Date */}
-
           <div className="flex items-center gap-2 text-xs font-mono uppercase text-emerald-400 mb-2">
-
             <span>
               {current.category ||
                 'Technology'}
@@ -297,28 +311,18 @@ export default function ContentDetailPage() {
             <span className="text-zinc-400">
               {current.date || ''}
             </span>
-
           </div>
-
-
-          {/* Title */}
 
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-4">
             {current.title ||
               'Untitled'}
           </h1>
 
-
-          {/* Author + Actions */}
-
           <div className="flex items-center justify-between pb-6 border-b border-zinc-800">
-
-            {/* AUTHOR */}
 
             <div className="flex items-center gap-3">
 
               {current.author?.avatar ? (
-
                 <img
                   src={current.author.avatar}
                   alt={
@@ -327,22 +331,16 @@ export default function ContentDetailPage() {
                   }
                   className="w-10 h-10 rounded-full object-cover ring-1 ring-zinc-700"
                 />
-
               ) : (
-
                 <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white">
-
                   {current.author?.name
                     ?.charAt(0)
                     ?.toUpperCase() ||
                     'U'}
-
                 </div>
-
               )}
 
               <div>
-
                 <p className="text-sm font-bold text-white">
                   {current.author?.name ||
                     'Unknown Author'}
@@ -352,22 +350,14 @@ export default function ContentDetailPage() {
                   {current.author?.role ||
                     'Contributor'}
                 </p>
-
               </div>
-
             </div>
 
-
-            {/* ACTIONS */}
-
             <div className="flex items-center gap-2 text-zinc-400">
-
-              {/* LIKE */}
 
               <button
                 type="button"
                 onClick={() => {
-
                   if (!token) {
                     alert(
                       'Please log in to like content.'
@@ -381,22 +371,16 @@ export default function ContentDetailPage() {
                 }}
                 className="flex items-center gap-1.5 hover:text-white text-xs bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg"
               >
-
                 <ThumbsUp size={14} />
 
                 <span>
                   {current.likes || 0}
                 </span>
-
               </button>
-
-
-              {/* WISHLIST */}
 
               <button
                 type="button"
                 onClick={() => {
-
                   if (!token) {
                     alert(
                       'Please log in to save content.'
@@ -414,7 +398,6 @@ export default function ContentDetailPage() {
                     : ''
                 }`}
               >
-
                 <Bookmark
                   size={14}
                   className={
@@ -423,11 +406,21 @@ export default function ContentDetailPage() {
                       : ''
                   }
                 />
-
               </button>
 
-
-              {/* DELETE POST */}
+              {!isAdmin && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowReportForm(true)
+                  }
+                  className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg hover:text-red-400 hover:border-red-500/30 text-xs"
+                  title="Report Content"
+                >
+                  <Flag size={14} />
+                  Report
+                </button>
+              )}
 
               {canDeletePost && (
                 <button
@@ -437,31 +430,100 @@ export default function ContentDetailPage() {
                   className="flex items-center gap-1.5 bg-red-600/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:bg-red-600/30 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   title="Delete Post"
                 >
-
                   <Trash2 size={14} />
 
                   {deleting
                     ? 'Deleting...'
                     : 'Delete'}
-
                 </button>
               )}
 
             </div>
-
           </div>
-
         </div>
 
+        {showReportForm && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
 
-        {/* CONTENT / MEDIA */}
+            <div className="flex items-center gap-2 mb-4">
+              <Flag
+                size={18}
+                className="text-red-400"
+              />
+
+              <h2 className="text-sm font-bold text-white">
+                Report this content
+              </h2>
+            </div>
+
+            <p className="text-xs text-zinc-400 mb-4">
+              Why are you reporting this content?
+            </p>
+
+            <div className="space-y-2 mb-4">
+
+              {[
+                'Spam',
+                'Inappropriate content',
+                'Misleading information',
+                'Copyright violation',
+                'Other',
+              ].map((reason) => (
+                <label
+                  key={reason}
+                  className="flex items-center gap-3 text-sm text-zinc-300 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="reportReason"
+                    value={reason}
+                    checked={
+                      reportReason === reason
+                    }
+                    onChange={(e) =>
+                      setReportReason(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                  {reason}
+                </label>
+              ))}
+
+            </div>
+
+            <div className="flex gap-2">
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowReportForm(false);
+                  setReportReason('');
+                }}
+                className="px-4 py-2 text-xs text-zinc-400 bg-zinc-800 rounded-lg hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReport}
+                disabled={reporting}
+                className="px-4 py-2 text-xs text-white bg-red-600 rounded-lg hover:bg-red-500 disabled:opacity-50"
+              >
+                {reporting
+                  ? 'Submitting...'
+                  : 'Submit Report'}
+              </button>
+
+            </div>
+          </div>
+        )}
 
         <MediaViewer
           item={current}
         />
-
-
-        {/* COMMENTS */}
 
         <CommentThread
           contentId={current.id}
@@ -469,7 +531,6 @@ export default function ContentDetailPage() {
         />
 
       </div>
-
     </AppLayout>
   );
 }

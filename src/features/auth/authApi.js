@@ -1,9 +1,8 @@
-const BASE_URL =
-import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-// =========================
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 // SIGN UP
-// =========================
+
 
 export async function apiSignup({
 first_name,
@@ -38,9 +37,9 @@ data.message || "Signup failed"
 return data;
 }
 
-// =========================
+
 // LOGIN
-// =========================
+
 
 export async function apiLogin({
 email,
@@ -72,9 +71,8 @@ data.message || "Invalid email or password"
 return data;
 }
 
-// =========================
 // GET CURRENT USER
-// =========================
+
 
 export async function apiFetchCurrentUser(token) {
 const res = await fetch(
@@ -97,9 +95,9 @@ data.message || "Session expired"
 return data;
 }
 
-// =========================
+
 // UPDATE PROFILE
-// =========================
+
 
 export async function apiUpdateProfile(
 updates,
