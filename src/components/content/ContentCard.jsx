@@ -92,7 +92,7 @@ export default function ContentCard({ item }) {
 
     if (type === 'video' && youtubeEmbedUrl) {
       return (
-        <div className="relative w-full aspect-video bg-black">
+        <div className="relative w-full max-w-xs mx-auto aspect-video bg-black">
           <iframe
             src={youtubeEmbedUrl}
             title={title}
@@ -106,11 +106,11 @@ export default function ContentCard({ item }) {
 
     if (type === 'video') {
       return (
-        <div className="relative w-full bg-black">
+        <div className="relative w-full max-w-xs mx-auto aspect-video bg-black pt-4">
           <video
             controls
             preload="metadata"
-            className="w-full max-h-[500px] object-contain"
+            className="w-full max-h-[180px] object-contain"
           >
             <source src={mediaUrl} />
             Your browser does not support video playback.
@@ -127,7 +127,7 @@ export default function ContentCard({ item }) {
 
     if (type === 'audio') {
       return (
-        <div className="bg-zinc-950 p-5 border-b border-zinc-800">
+        <div className="relative w-full max-w-xs mx-auto bg-black pt-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
               <Play size={18} className="text-white" />
