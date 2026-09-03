@@ -1,13 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Bell, Bookmark, Shield, PenTool } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Bell, Bookmark, Shield, PenTool, LogOut } from 'lucide-react';
+import { logout } from '../../features/auth/authSlice';
 
 export default function Header() {
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { unreadCount } = useSelector((state) => state.notifications);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const role = user?.role;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-[#09090b]/90 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3">
@@ -64,6 +72,17 @@ export default function Header() {
               </div>
             )}
           </Link>
+
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Log out"
+              className="p-2 text-zinc-400 hover:text-red-400 rounded-lg hover:bg-zinc-800/60"
+            >
+              <LogOut size={18} />
+            </button>
+          )}
         </div>
       </div>
     </header>
