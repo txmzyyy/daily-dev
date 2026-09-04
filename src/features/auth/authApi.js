@@ -9,6 +9,7 @@ first_name,
 last_name,
 email,
 password,
+role,
 }) {
 const res = await fetch(`${BASE_URL}/api/auth/signup`, {
 method: "POST",
@@ -22,6 +23,7 @@ body: JSON.stringify({
   last_name,
   email,
   password,
+  role,
 }),
 
 });

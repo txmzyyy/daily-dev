@@ -39,6 +39,7 @@ export default function SignUpPage() {
           last_name,
           email: formData.email,
           password: formData.password,
+          role,
         })
       ).unwrap();
 
@@ -81,7 +82,7 @@ export default function SignUpPage() {
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            Developer
+            user
           </button>
 
           <button
@@ -191,26 +192,7 @@ export default function SignUpPage() {
             or continue with
           </span>
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-
-          <button
-            type="button"
-            className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 py-2.5 rounded-xl text-xs font-semibold text-zinc-300"
-          >
-            GitHub
-          </button>
-
-          <button
-            type="button"
-            className="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 py-2.5 rounded-xl text-xs font-semibold text-zinc-300"
-          >
-            Google
-          </button>
-
-        </div>
-
-        <p className="text-center text-xs text-zinc-400">
+      <p className="text-center text-xs text-zinc-400">
           Already have an account?{' '}
           <Link
             to="/login"
