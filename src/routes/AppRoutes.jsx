@@ -44,7 +44,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={['writer', 'admin']} />}>
       <Route path="/writer/dashboard" element={<WriterDashboardPage />} />
       <Route path="/writer/create" element={<CreateContentPage />} />
-      <Route path="/admin/categories" element={<CategoryManagementPage />} />
+     
     </Route>
 
       {/* Admin Routes */}
@@ -53,6 +53,7 @@ export default function AppRoutes() {
       <Route path="/admin/users" element={<UserManagementPage />} />
       <Route path="/admin/moderation" element={<ContentModerationPage />} />
       <Route path="/admin/reports" element={<ReportsPage />} />
+       <Route path="/admin/categories" element={<CategoryManagementPage />} />
     </Route>
 
       {/* 404 */}

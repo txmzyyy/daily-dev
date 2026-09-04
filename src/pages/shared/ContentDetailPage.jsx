@@ -408,7 +408,7 @@ export default function ContentDetailPage() {
                 />
               </button>
 
-              {!isWriter(
+              {!isWriter &&(
                 <button
                   type="button"
                   onClick={() =>
