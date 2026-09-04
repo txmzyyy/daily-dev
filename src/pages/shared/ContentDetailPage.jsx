@@ -282,7 +282,7 @@ export default function ContentDetailPage() {
     currentUser?.role === 'writer';
 
   const canDeletePost =
-    isAdmin || isWriter;
+    isAdmin;
 
   const isWishlisted =
     wishlistIds.includes(current.id);
@@ -408,7 +408,7 @@ export default function ContentDetailPage() {
                 />
               </button>
 
-              {!isAdmin && (
+              {!isWriter(
                 <button
                   type="button"
                   onClick={() =>

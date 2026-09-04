@@ -40,20 +40,20 @@ export default function AppRoutes() {
         <Route path="/content/:id" element={<ContentDetailPage />} />
       </Route>
 
-      {/* Tech Writer Routes */}
+          {/* Tech Writer Routes */}
       <Route element={<ProtectedRoute allowedRoles={['writer', 'admin']} />}>
-        <Route path="/writer/dashboard" element={<WriterDashboardPage />} />
-        <Route path="/writer/create" element={<CreateContentPage />} />
-      </Route>
+      <Route path="/writer/dashboard" element={<WriterDashboardPage />} />
+      <Route path="/writer/create" element={<CreateContentPage />} />
+      <Route path="/admin/categories" element={<CategoryManagementPage />} />
+    </Route>
 
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/moderation" element={<ContentModerationPage />} />
-        <Route path="/admin/categories" element={<CategoryManagementPage />} />
-        <Route path="/admin/reports" element={<ReportsPage />} />
-      </Route>
+      <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+      <Route path="/admin/users" element={<UserManagementPage />} />
+      <Route path="/admin/moderation" element={<ContentModerationPage />} />
+      <Route path="/admin/reports" element={<ReportsPage />} />
+    </Route>
 
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />
